@@ -8,21 +8,14 @@ import com.pedropathing.math.Pose;
 import com.pedropathing.paths.Path;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
-import org.firstinspires.ftc.teamcode.v1.config.DasboardTest;
 import org.firstinspires.ftc.teamcode.v1.config.DriveConfig;
 
-import com.qualcomm.robotcore.hardware.DistanceSensor;
-import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
-import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+
 import org.firstinspires.ftc.teamcode.v1.config.ShootingConfig;
 import org.firstinspires.ftc.teamcode.v1.config.TeleOpMode_ballseekConfig;
-import org.firstinspires.ftc.teamcode.v1.hardware.RobotHardware;
 import org.firstinspires.ftc.teamcode.v1.services.VisionService;
-import com.pedropathing.math.Pose;
-import com.pedropathing.paths.Path;
-import com.pedropathing.api.PoseFactory;
 
 /**
  * TeleOpMode — driver-control OpMode.
@@ -195,8 +188,6 @@ public class TeleOpMode_ballseek extends RobotOpMode {
                 shootingStatesPollen = ShootingStatesPollen.OFF;
                 shootingStatesNectar = ShootingStatesNectar.OFF;
             }
-
-            telemetry.addData("Test Value", DasboardTest.TEST_VALUE);
 
 
 
