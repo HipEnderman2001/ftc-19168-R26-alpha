@@ -20,16 +20,26 @@ public class IntakeSubsystem {
     };
 
     public void start(){
-        DcMotorEx motor = hardware.getIntakeFront();
-        if (motor != null) {
-            hardware.getIntakeFront().setPower(-IntakeConfig.INTAKE_POWER);
+        DcMotorEx frontMotor = hardware.getIntakeFront();
+        DcMotorEx intakeMotor = hardware.getIntakeMotor();
+
+        if (frontMotor != null) {
+            frontMotor.setPower(IntakeConfig.INTAKE_POWER);
+        }
+        if (intakeMotor != null) {
+            intakeMotor.setPower(IntakeConfig.INTAKE_POWER);
         }
     };
 
     public void stop(){
-        DcMotorEx motor = hardware.getIntakeFront();
-        if (motor != null) {
-            hardware.getIntakeFront().setPower(0);
+        DcMotorEx frontMotor = hardware.getIntakeFront();
+        DcMotorEx intakeMotor = hardware.getIntakeMotor();
+
+        if (frontMotor != null) {
+            frontMotor.setPower(0);
+        }
+        if (intakeMotor != null) {
+            intakeMotor.setPower(0);
         }
     };
 }

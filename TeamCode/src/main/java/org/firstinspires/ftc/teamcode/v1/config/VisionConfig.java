@@ -14,7 +14,7 @@ public final class VisionConfig {
     }
 
     // Camera name mirrors the canonical hardware name used by RobotHardware.
-    public static String CAMERA_NAME = RobotHardwareNames.WEBCAM_NAME;
+    //public static String CAMERA_NAME = RobotHardwareNames.WEBCAM_NAME;
 
     // AprilTag IDs used in autonomous decisions (placeholder defaults).
     public static int APRILTAG_ID_LEFT = 1;

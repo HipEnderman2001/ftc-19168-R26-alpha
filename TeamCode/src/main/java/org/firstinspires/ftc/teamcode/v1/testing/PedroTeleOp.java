@@ -7,6 +7,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.util.RobotLog;
 
 import org.firstinspires.ftc.teamcode.v1.services.PedroPathingConstants;
+import org.firstinspires.ftc.teamcode.v1.testing.pedroPathing.pedro.Constants;
 
 // Replaced by v1/opmodes/TeleOpMode.java — kept here as a reference skeleton.
 // Remove @Disabled to temporarily restore this OpMode for diagnostics.
@@ -18,7 +19,7 @@ public class PedroTeleOp extends LinearOpMode {
 
     private boolean initFollower() {
         try {
-            follower = PedroPathingConstants.createFollower(hardwareMap);
+            follower = Constants.createFollower(hardwareMap);
             return follower != null;
         } catch (Throwable t) {
             RobotLog.ee("PedroTeleOp", t, "Follower init failed");

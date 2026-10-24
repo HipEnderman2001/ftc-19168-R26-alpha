@@ -8,6 +8,7 @@ import com.pedropathing.math.Pose;
 import com.pedropathing.paths.Path;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
+import org.firstinspires.ftc.teamcode.v1.config.DasboardTest;
 import org.firstinspires.ftc.teamcode.v1.config.DriveConfig;
 
 import com.qualcomm.robotcore.hardware.DistanceSensor;
@@ -39,11 +40,14 @@ public class TeleOpMode_ballseek extends RobotOpMode {
     private boolean isSeekMode = false;
 
     private boolean prevAButtonPressed = false;
+    private boolean prevBButtonPressed = false;
+    private boolean prevXButtonPressed = false;
+    private boolean isIntakeKillSwitchOn = false;
 
     private enum IntakeStates {OFF, IN, OUT};
     private enum ShootingStatesPollen {OFF, SHOOT};
     private enum ShootingStatesNectar {OFF, SHOOT};
-    private IntakeStates intakeState = IntakeStates.OFF;
+    private IntakeStates intakeState = IntakeStates.IN;
     private ShootingStatesPollen shootingStatesPollen = ShootingStatesPollen.OFF;
     private ShootingStatesNectar shootingStatesNectar = ShootingStatesNectar.OFF;
     private boolean prevLeftBumperPressed = false;
@@ -99,6 +103,14 @@ public class TeleOpMode_ballseek extends RobotOpMode {
             stopRobot();
             return;
         }
+        // Latch current button levels so held buttons at START do not trigger
+        // one-time "rising-edge" actions on the first loop.
+        prevAButtonPressed = gamepad1.a;
+        prevBButtonPressed = gamepad1.b;
+        prevXButtonPressed = gamepad1.x;
+        prevBackPressed = gamepad1.back;
+        prevStartPressed = gamepad1.start;
+        prevLeftBumperPressed = gamepad1.left_bumper;
 
         while (opModeIsActive() && !isStopRequested()) {
 
@@ -153,38 +165,38 @@ public class TeleOpMode_ballseek extends RobotOpMode {
             if (aPressed && !prevAButtonPressed) {
                 isSeekMode = !isSeekMode;
                 if (isSeekMode) {
-                    intakeState = IntakeStates.IN;
                     seekState = SeekState.SEEK_BALL;
                 }else {
-                    intakeState = IntakeStates.OFF;
-                    seekState = SeekState.SEEK_BALL;
-                    isReturnToLocationAMode = false;
-                    autoForwardMode = false;
-                    resetBallTrackingState();
-                    // A pressed mid-return is the driver's abort: break any in-progress
-                    // path and re-enter teleop drive, or the sticks stay dead.
-                    robot.drive.stop();
-                    robot.drive.resumeTeleOpDrive();
+                    exitSeekMode();
                 }
 
             }
             prevAButtonPressed = aPressed;
 
-            if (gamepad1.left_bumper) {
-                if (intakeState == IntakeStates.OFF) {
-                    intakeState = IntakeStates.IN;
-
-                } else if (intakeState == IntakeStates.IN) {
-                    intakeState = IntakeStates.OFF;
-                }
+            boolean bPressed = gamepad1.b;
+            if (bPressed && !prevBButtonPressed) {
+                // Dedicated hard cancel if seek state ever feels "stuck."
+                isSeekMode = false;
+                exitSeekMode();
             }
+            prevBButtonPressed = bPressed;
 
-            if (gamepad2.left_trigger > 0.5) {
+            boolean xPressed = gamepad1.x;
+            if (xPressed && !prevXButtonPressed) {
+                isIntakeKillSwitchOn = !isIntakeKillSwitchOn;
+            }
+            prevXButtonPressed = xPressed;
+
+            boolean isShootRequested = gamepad2.left_trigger > 0.5 || gamepad1.left_trigger > 0.5;
+            if (isShootRequested) {
                 shootingStatesPollen = ShootingStatesPollen.SHOOT;
-                //shootingStates = ShootingStates.SHOOT_NECTAR;
+                shootingStatesNectar = ShootingStatesNectar.SHOOT;
             } else {
                 shootingStatesPollen = ShootingStatesPollen.OFF;
+                shootingStatesNectar = ShootingStatesNectar.OFF;
             }
+
+            telemetry.addData("Test Value", DasboardTest.TEST_VALUE);
 
 
 
@@ -255,8 +267,9 @@ public class TeleOpMode_ballseek extends RobotOpMode {
                     }
                 }
                 //postintake ball detect - color sensor setup
-                NormalizedColorSensor rightColorSensor = robot.hardware.getRightColorSensor();
-                NormalizedColorSensor leftColorSensor = robot.hardware.getLeftColorSensor();
+                //NormalizedColorSensor rightColorSensor = robot.hardware.getRightColorSensor();
+                //NormalizedColorSensor leftColorSensor = robot.hardware.getLeftColorSensor();
+                /*
                 if (rightColorSensor instanceof DistanceSensor && leftColorSensor instanceof DistanceSensor) {
                     double rightDistanceCm = ((DistanceSensor) rightColorSensor).getDistance(DistanceUnit.CM);
                     double leftDistanceCm = ((DistanceSensor) leftColorSensor).getDistance(DistanceUnit.CM);
@@ -277,6 +290,8 @@ public class TeleOpMode_ballseek extends RobotOpMode {
                         isBallDetected = false;
                     }
                 }
+
+                 */
 
                 // Transition: ball collected → start the return path ONCE, at this edge.
                 // followPath() must not be re-issued every loop — restarting the path each
@@ -302,6 +317,15 @@ public class TeleOpMode_ballseek extends RobotOpMode {
 
 
 
+            boolean isDriverOverrideRequested = Math.hypot(gamepad1.left_stick_x, gamepad1.left_stick_y)
+                    > DriveConfig.TELEOP_DRIVE_DEADZONE
+                    || Math.abs(gamepad1.right_stick_x) > DriveConfig.TELEOP_DRIVE_DEADZONE;
+            if (isSeekMode && isDriverOverrideRequested) {
+                // Safety override: any stick movement immediately returns drive control to the driver.
+                isSeekMode = false;
+                exitSeekMode();
+            }
+
 
             if (!isSeekMode)  {
                 applyTeleOpDrive(
@@ -323,16 +347,21 @@ public class TeleOpMode_ballseek extends RobotOpMode {
                         robot.drive.getPose(),
                         false // TODO: wire this up when AutoParking is built
                 );
-                if (intakeState == IntakeStates.OFF) {
+                if (isShootRequested || isIntakeKillSwitchOn) {
                     robot.intake.stop();
-                } else if (intakeState == IntakeStates.IN) {
+                } else {
                     robot.intake.start();
                 }
 
-                if (shootingStatesPollen == ShootingStatesPollen.OFF) {
+                if (isShootRequested) {
+                    robot.shooting.pollenGatePosition(ShootingConfig.POLLEN_GATE_OPEN);
+                    robot.shooting.nectarGatePosition(ShootingConfig.NECTAR_GATE_OPEN);
+                    robot.shooting.startPollenShooter(ShootingConfig.TARGET_POLLEN_RPM);
+                    robot.shooting.startNectarShooter(ShootingConfig.TARGET_NECTAR_RPM);
+                } else {
+                    robot.shooting.pollenGatePosition(ShootingConfig.POLLEN_GATE_CLOSE);
+                    robot.shooting.nectarGatePosition(ShootingConfig.NECTAR_GATE_CLOSE);
                     robot.shooting.stop();
-                } else if (shootingStatesPollen == ShootingStatesPollen.SHOOT) {
-                    robot.shooting.startPollenShooter(15);
                 }
 
             }
@@ -360,7 +389,18 @@ public class TeleOpMode_ballseek extends RobotOpMode {
                         resetBallTrackingState();
                     }
                 }
-                robot.intake.start();
+                if (isShootRequested || isIntakeKillSwitchOn) {
+                    robot.intake.stop();
+                    robot.shooting.pollenGatePosition(ShootingConfig.POLLEN_GATE_OPEN);
+                    robot.shooting.nectarGatePosition(ShootingConfig.NECTAR_GATE_OPEN);
+                    robot.shooting.startPollenShooter(ShootingConfig.TARGET_POLLEN_RPM);
+                    robot.shooting.startNectarShooter(ShootingConfig.TARGET_NECTAR_RPM);
+                } else {
+                    robot.intake.start();
+                    robot.shooting.pollenGatePosition(ShootingConfig.POLLEN_GATE_CLOSE);
+                    robot.shooting.nectarGatePosition(ShootingConfig.NECTAR_GATE_CLOSE);
+                    robot.shooting.stop();
+                }
             }
 
             telemetry.addData("Ball Visible", target.isVisible);
@@ -409,6 +449,7 @@ public class TeleOpMode_ballseek extends RobotOpMode {
             double avgRearRpm = (robot.drive.getLeftRearRpm() + robot.drive.getRightRearRpm()) / 2.0;
             telemetry.addData("Front/Rear RPM Ratio", "%.3f", avgRearRpm > 0.1 ? avgFrontRpm / avgRearRpm : 0.0);
             telemetry.addData("Seek Mode", isSeekMode ? "ON (A to toggle)" : "OFF");
+            telemetry.addData("Intake Kill", isIntakeKillSwitchOn ? "ON (X to toggle)" : "OFF (X to toggle)");
             telemetry.update();
 
             idle();
@@ -443,6 +484,18 @@ public class TeleOpMode_ballseek extends RobotOpMode {
         prevBallWasCentered = false;
         prevBallWasClose = false;
         ballDetectConfirmTimer.reset();
+    }
+
+    private void exitSeekMode() {
+        seekState = SeekState.SEEK_BALL;
+        isReturnToLocationAMode = false;
+        autoForwardMode = false;
+        forward = 0.0;
+        turn = 0.0;
+        resetBallTrackingState();
+        // Abort follower-owned driving and hand control back to teleop.
+        robot.drive.stop();
+        robot.drive.resumeTeleOpDrive();
     }
 
     public void applyTeleOpDrive(

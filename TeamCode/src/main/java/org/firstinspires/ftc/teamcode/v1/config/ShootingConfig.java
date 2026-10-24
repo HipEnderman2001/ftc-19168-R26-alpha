@@ -20,7 +20,7 @@ public class ShootingConfig {
     public static double POLLEN_GAIN = 1;
     public static double POLLEN_MIN_RPM = 0;
     public static double POLLEN_MAX_RPM = 3000;
-    public static double TARGET_POLLEN_RPM = 1000;
+    public static double TARGET_POLLEN_RPM = 1500;
 
     //Nectar PID constants
     public static double NECTAR_PGAIN = 0.002;
@@ -35,8 +35,15 @@ public class ShootingConfig {
     public static double NECTAR_GAIN = 1;
     public static double NECTAR_MIN_RPM = 0;
     public static double NECTAR_MAX_RPM = 3000;
-    public static double TARGET_NECTAR_RPM = 1000;
+    public static double TARGET_NECTAR_RPM = 1500;
 
-    public static double[] pidOutput = {0, 0, 0, 0};
+    //Gate Positions
+    public static double POLLEN_GATE_OPEN = 1;
+    public static double POLLEN_GATE_CLOSE = 0;
+    public static double NECTAR_GATE_OPEN = 1;
+    public static double NECTAR_GATE_CLOSE = 0;
+
+    public static double[] pollenPidOutput = {0, 0, 0, 0};
+    public static double[] nectarPidOutput = {0, 0, 0, 0};
 
 }

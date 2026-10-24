@@ -6,6 +6,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
+import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 
@@ -26,14 +27,14 @@ public class RobotHardware {
     private DcMotorEx rightRearMotor;
     private DcMotorEx leftRearMotor;
     private DcMotorEx leftFrontMotor;
-    private GoBildaPinpointDriver pinpoint;
+    private GoBildaPinpointDriver odo;
     private WebcamName webcam;
     private DcMotorEx intakeFront;
     private DcMotorEx pollenLauncher;
-    //private DcMotorEx nectarLauncher;
-    private NormalizedColorSensor leftColorSensor;
-    private NormalizedColorSensor rightColorSensor;
-
+    private DcMotorEx nectarLauncher;
+    private DcMotorEx intakeMotor;
+    private Servo nectargateServo;
+    private Servo pollengateServo;
     /**
      * Maps all hardware devices and enables manual bulk caching on every REV hub.
      * Must be called first inside RobotContainer.initialize(), before any subsystem init.
@@ -60,29 +61,25 @@ public class RobotHardware {
 
         // Optional localization hardware: must not block startup when missing.
         try {
-            pinpoint = hardwareMap.get(GoBildaPinpointDriver.class, RobotHardwareNames.PINPOINT);
+            odo = hardwareMap.get(GoBildaPinpointDriver.class, RobotHardwareNames.PINPOINT);
         } catch (Exception ignored) {
-            pinpoint = null;
+            odo = null;
         }
 
         // Optional vision hardware: Logitech webcam on USB.
+        /*
         try {
             webcam = hardwareMap.get(WebcamName.class, RobotHardwareNames.WEBCAM_NAME);
         } catch (Exception ignored) {
             webcam = null;
         }
+         */
 
         // ── Season devices ───────────────────────────────────────────────────────────────────────
         // Add hardwareMap.get() calls here as new mechanisms are added each season.
         // Example:
         //   liftMotor = hardwareMap.get(DcMotorEx.class, RobotHardwareNames.LIFT_MOTOR);
         //   liftMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        try {
-            intakeFront = hardwareMap.get(DcMotorEx.class, RobotHardwareNames.INTAKE_FRONT);
-            intakeFront.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
-        } catch (Exception ignored) {
-            intakeFront = null;
-        }
         //if intake is not null let power go down slowly when stopped
         if (intakeFront != null) {
             intakeFront.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
@@ -91,11 +88,15 @@ public class RobotHardware {
         pollenLauncher = hardwareMap.get(DcMotorEx.class, RobotHardwareNames.POLLEN_LAUNCHER);
         pollenLauncher.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
 
-        //nectarLauncher = hardwareMap.get(DcMotorEx.class, RobotHardwareNames.NECTAR_LAUNCHER);
-        //nectarLauncher.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+        nectarLauncher = hardwareMap.get(DcMotorEx.class, RobotHardwareNames.NECTAR_LAUNCHER);
+        nectarLauncher.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
 
-        leftColorSensor = hardwareMap.get(NormalizedColorSensor.class, RobotHardwareNames.LEFT_COLOR_SENSOR);
-        rightColorSensor = hardwareMap.get(NormalizedColorSensor.class, RobotHardwareNames.RIGHT_COLOR_SENSOR);
+        intakeMotor = hardwareMap.get(DcMotorEx.class, RobotHardwareNames.INTAKE_MOTOR);
+        intakeMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
+        pollengateServo = hardwareMap.get(Servo.class, RobotHardwareNames.POLLEN_GATE_SERVO);
+
+        nectargateServo = hardwareMap.get(Servo.class, RobotHardwareNames.NECTAR_GATE_SERVO);
 
     }
 
@@ -152,7 +153,7 @@ public class RobotHardware {
     }
 
     public GoBildaPinpointDriver getPinpoint() {
-        return pinpoint;
+        return odo;
     }
 
     public WebcamName getWebcam() {
@@ -164,18 +165,18 @@ public class RobotHardware {
     public DcMotorEx getPollenLauncher() {
         return pollenLauncher;
     }
-    /*
     public DcMotorEx getNectarLauncher() {
         return nectarLauncher;
     }
-     */
-    public NormalizedColorSensor getLeftColorSensor() {
-        return leftColorSensor;
+    public DcMotorEx getIntakeMotor() {
+        return intakeMotor;
     }
-    public NormalizedColorSensor getRightColorSensor() {
-        return rightColorSensor;
+    public Servo getNectargateServo() {
+        return nectargateServo;
     }
-
+    public Servo getPollengateServo() {
+        return pollengateServo;
+    }
 }
 
 

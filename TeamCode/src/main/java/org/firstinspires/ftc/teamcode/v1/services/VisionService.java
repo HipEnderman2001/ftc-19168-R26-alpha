@@ -56,7 +56,7 @@ public class VisionService {
             // Team standard: Logitech webcam only (no phone/device camera fallback).
             WebcamName webcam = hardware.getWebcam();
             if (webcam == null) {
-                initError = "Missing webcam: " + RobotHardwareNames.WEBCAM_NAME;
+                //initError = "Missing webcam: " + RobotHardwareNames.WEBCAM_NAME;
                 telemetry.addLine("[WARN] Vision webcam missing; continuing without camera.");
                 return;
             }

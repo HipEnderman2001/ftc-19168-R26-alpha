@@ -11,6 +11,7 @@ import com.qualcomm.robotcore.util.RobotLog;
 import org.firstinspires.ftc.teamcode.v1.config.DriveConfig;
 import org.firstinspires.ftc.teamcode.v1.hardware.RobotHardware;
 import org.firstinspires.ftc.teamcode.v1.services.PedroPathingConstants;
+import org.firstinspires.ftc.teamcode.v1.testing.pedroPathing.pedro.Constants;
 
 public class DriveSubsystem {
 
@@ -24,7 +25,7 @@ public class DriveSubsystem {
         this.hardware = hardware;
 
         try {
-            follower = PedroPathingConstants.createFollower(hardwareMap);
+            follower = Constants.createFollower(hardwareMap);
         } catch (Exception e) {
             RobotLog.ee(TAG, e, "Follower initialization failed");
             initError = e.getClass().getSimpleName() + ": " + e.getMessage();

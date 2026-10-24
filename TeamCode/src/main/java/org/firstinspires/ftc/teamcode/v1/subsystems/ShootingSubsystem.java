@@ -6,6 +6,7 @@ import com.qualcomm.robotcore.util.RobotLog;
 import org.firstinspires.ftc.teamcode.v1.config.IntakeConfig;
 import org.firstinspires.ftc.teamcode.v1.config.ShootingConfig;
 import org.firstinspires.ftc.teamcode.v1.hardware.RobotHardware;
+import org.firstinspires.ftc.teamcode.v1.hardware.RobotHardwareNames;
 import org.firstinspires.ftc.teamcode.v1.services.MotorHelper;
 import org.firstinspires.ftc.teamcode.v1.services.PedroPathingConstants;
 public class ShootingSubsystem {
@@ -24,10 +25,10 @@ public class ShootingSubsystem {
         //hardware.getPollenLauncher().setPower(ShootingConfig.SHOOTING_POWER_POLLEN);
 
         if (hardware.getPollenLauncher().getPower() == 0) {
-            ShootingConfig.pidOutput = new double[]{0, 0, 0, 0};
+            ShootingConfig.pollenPidOutput = new double[]{0, 0, 0, 0};
         }
 
-        ShootingConfig.pidOutput = MotorHelper.pidRunWithEncoder(
+        ShootingConfig.pollenPidOutput = MotorHelper.pidRunWithEncoder(
                 hardware.getPollenLauncher(),
                 ShootingConfig.POLLEN_PGAIN,
                 ShootingConfig.POLLEN_PGAIN2,
@@ -37,7 +38,7 @@ public class ShootingSubsystem {
                 ShootingConfig.POLLEN_PDUTY_MAX,
                 ShootingConfig.POLLEN_IDUTY_MIN,
                 ShootingConfig.POLLEN_IDUTY_MAX,
-                ShootingConfig.pidOutput[1],
+                ShootingConfig.pollenPidOutput[1],
                 ShootingConfig.POLLEN_POWER_MIN,
                 ShootingConfig.POLLEN_POWER_MAX,
                 ShootingConfig.POLLEN_GAIN,
@@ -46,12 +47,44 @@ public class ShootingSubsystem {
                 0,
                 true
         );
-        hardware.getPollenLauncher().setPower(-ShootingConfig.pidOutput[0]);
+        hardware.getPollenLauncher().setPower(-ShootingConfig.pollenPidOutput[0]);
     };
 
-    public void startNectarShooter(){
+    public void startNectarShooter(double power){
         //hardware.getNectarLauncher().setPower(ShootingConfig.SHOOTING_POWER_NECTAR);
+
+        if (hardware.getNectarLauncher().getPower() == 0) {
+            ShootingConfig.nectarPidOutput = new double[]{0, 0, 0, 0};
+        }
+
+        ShootingConfig.nectarPidOutput = MotorHelper.pidRunWithEncoder(
+                hardware.getNectarLauncher(),
+                ShootingConfig.NECTAR_PGAIN,
+                ShootingConfig.NECTAR_PGAIN2,
+                ShootingConfig.NECTAR_IGAIN,
+                power,
+                ShootingConfig.NECTAR_PDUTY_MIN,
+                ShootingConfig.NECTAR_PDUTY_MAX,
+                ShootingConfig.NECTAR_IDUTY_MIN,
+                ShootingConfig.NECTAR_IDUTY_MAX,
+                ShootingConfig.nectarPidOutput[1],
+                ShootingConfig.NECTAR_POWER_MIN,
+                ShootingConfig.NECTAR_POWER_MAX,
+                ShootingConfig.NECTAR_GAIN,
+                ShootingConfig.NECTAR_MIN_RPM,
+                ShootingConfig.NECTAR_MAX_RPM,
+                0,
+                true
+        );
+        hardware.getNectarLauncher().setPower(-ShootingConfig.nectarPidOutput[0]);
     };
+
+    public void pollenGatePosition(double position) {
+        hardware.getPollengateServo().setPosition(position);
+    }
+    public void nectarGatePosition(double position) {
+        hardware.getNectargateServo().setPosition(position);
+    }
 
     public double getPollenLauncherRpm() {
         if (hardware.getPollenLauncher() == null) {
@@ -70,6 +103,6 @@ public class ShootingSubsystem {
 
     public void stop(){
         hardware.getPollenLauncher().setPower(0);
-        //hardware.getNectarLauncher().setPower(0);
+        hardware.getNectarLauncher().setPower(0);
     };
 }
